@@ -1,7 +1,2 @@
-require "omniauth/parti/version"
-
-module Omniauth
-  module Parti
-    # Your code goes here...
-  end
-end
+require 'omniauth/parti/version'
+require 'omniauth/strategies/parti'
