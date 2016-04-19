@@ -66,4 +66,37 @@ describe OmniAuth::Strategies::Parti do
       expect(subject.options.client_options.secret).to eq('client-secret')
     end
   end
+
+  describe 'request phase', e2e: true do
+    before :all do
+      # OpenIDConnect.debug!
+      SWD.url_builder = WebFinger.url_builder = URI::HTTP
+    end
+
+    it 'redirects to authorization endpoint' do
+      subject = strategy_class.new app,
+        issuer: 'http://v1.api.auth.parti.xyz',
+        client_options: {
+          identifier: 'client-identifier',
+          redirect_uri: 'http://redirect-uri.com'
+        }
+
+      expect(subject).to receive(:redirect) do |redirect_url|
+        url = URI.parse redirect_url
+        params = Hash[URI.decode_www_form(url.query)]
+
+        expect(url.host).to eq('auth.parti.xyz')
+        expect(params.keys).to contain_exactly(
+          'client_id', 'nonce', 'redirect_uri', 'response_type', 'scope', 'state'
+        )
+        expect(params['client_id']).to eq('client-identifier')
+        expect(params['nonce'].length).to be > 0
+        expect(params['redirect_uri']).to eq('http://redirect-uri.com')
+        expect(params['response_type']).to eq('code')
+        expect(params['scope'].split).to contain_exactly('email', 'openid')
+        expect(params['state'].length).to be > 0
+      end
+      subject.request_phase
+    end
+  end
 end
