@@ -9,7 +9,7 @@ describe OmniAuth::Strategies::Parti do
   describe 'default options' do
     subject { strategy_class.new app }
     it 'has correct issuer' do
-      expect(subject.options.issuer).to eq('https://v1.api.parti.xyz')
+      expect(subject.options.issuer).to eq('https://v1.api.auth.parti.xyz')
     end
 
     it 'has default name' do
