@@ -21,7 +21,7 @@ describe OmniAuth::Strategies::Parti do
     end
 
     it 'has default scope' do
-      expect(subject.options.scope).to eq([:openid])
+      expect(subject.options.scope).to contain_exactly(:email, :openid)
     end
 
     it 'skips info' do

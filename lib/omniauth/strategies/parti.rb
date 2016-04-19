@@ -5,6 +5,7 @@ module OmniAuth::Strategies
     option :discovery, true
     option :issuer, 'https://v1.api.auth.parti.xyz'
     option :name, 'parti'
+    option :scope, [:openid, :email]
     option :skip_info, true
   end
 end
