@@ -6,7 +6,6 @@ describe OmniAuth::Strategies::Parti do
   include_context 'user'
 
   before :all do
-    SWD.url_builder = WebFinger.url_builder = URI::HTTP
     OpenIDConnect.debug!
   end
 

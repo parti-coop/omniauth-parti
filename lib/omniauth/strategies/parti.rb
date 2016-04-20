@@ -1,4 +1,5 @@
 require 'omniauth-openid-connect'
+require 'parti_auth/id_token'
 
 module OmniAuth::Strategies
   class Parti < OpenIDConnect
@@ -14,14 +15,13 @@ module OmniAuth::Strategies
 
     def call(env)
       env['omniauth.strategy'] = self
-       options.issuer = issuer if options.issuer.blank?
       _call(env)
     end
 
     def id_info
       @id_info ||= lambda {
         id_token = credentials[:id_token]
-        ::OpenIDConnect::ResponseObject::IdToken.decode(id_token, public_key)
+        ::PartiAuth::IdToken.decode(id_token, public_key)
       }.call
     end
   end

@@ -13,11 +13,12 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Omniauth provider for parti auth. }
   spec.homepage      = "https://github.com/parti-xyz/omniauth-parti."
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features|manuelfile)/}) }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "activesupport"
   spec.add_dependency "omniauth-openid-connect", "~> 0.2.3"
 
   spec.add_development_dependency "bundler", "~> 1.11"
