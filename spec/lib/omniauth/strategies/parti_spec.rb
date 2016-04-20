@@ -1,4 +1,15 @@
+require 'omniauth/strategies/parti'
+
 describe OmniAuth::Strategies::Parti do
+  include_context 'auth_code'
+  include_context 'client'
+  include_context 'user'
+
+  before :all do
+    SWD.url_builder = WebFinger.url_builder = URI::HTTP
+    OpenIDConnect.debug!
+  end
+
   def app
     lambda do |_env|
       [200, {}, ["Hello."]]
@@ -57,8 +68,8 @@ describe OmniAuth::Strategies::Parti do
     end
 
     it 'sets client id' do
-      subject = strategy_class.new app, client_options: { identifier: 'client-identifer' }
-      expect(subject.options.client_options.identifier).to eq('client-identifer')
+      subject = strategy_class.new app, client_options: { identifier: 'client-identifier' }
+      expect(subject.options.client_options.identifier).to eq('client-identifier')
     end
 
     it 'sets client secret' do
@@ -68,11 +79,6 @@ describe OmniAuth::Strategies::Parti do
   end
 
   describe 'request phase', e2e: true do
-    before :all do
-      # OpenIDConnect.debug!
-      SWD.url_builder = WebFinger.url_builder = URI::HTTP
-    end
-
     it 'redirects to authorization endpoint' do
       subject = strategy_class.new app,
         issuer: 'http://v1.api.auth.parti.xyz',
@@ -97,6 +103,47 @@ describe OmniAuth::Strategies::Parti do
         expect(params['state'].length).to be > 0
       end
       subject.request_phase
+    end
+  end
+
+  describe 'callback phase', e2e: true  do
+    it 'build auth_hash' do
+      client = client_exists
+      user = user_exists
+
+      subject = strategy_class.new app,
+        issuer: 'http://v1.api.auth.parti.xyz',
+        client_options: {
+          identifier: client[:client_id],
+          redirect_uri: client[:redirect_uris].first,
+          secret: client[:client_secret]
+        }
+
+      auth_code = auth_code_is_issued(
+        account: { parti: { identifier: user[:identifier] }},
+        client_id: client[:client_id],
+        client_secret: client[:client_secret],
+        nonce: 'random-nonce',
+        redirect_uri: client[:redirect_uris].first,
+        scopes: ['openid']
+      )
+
+      allow(subject).to receive(:request) do
+        double 'Request',
+          params: {'code' => auth_code[:code], 'state' => 'random-state'},
+          path_info: ''
+      end
+
+      subject.call!({'rack.session' => {'omniauth.state' => 'random-state', 'omniauth.nonce' => 'random-nonce'}})
+      subject.callback_phase
+
+      auth_hash = subject.auth_hash
+      id_token = auth_hash.credentials.id_token
+      claims = OpenIDConnect::ResponseObject::IdToken.decode(id_token, subject.public_key)
+      expect(claims.iss).to eq('http://v1.api.auth.parti.xyz')
+      expect(claims.sub).to eq(auth_code[:account][:identifier])
+      expect(claims.aud).to eq(client[:client_id])
+      expect(auth_hash.uid).to eq(auth_code[:account][:identifier])
     end
   end
 end

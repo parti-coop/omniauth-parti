@@ -7,6 +7,14 @@ module OmniAuth::Strategies
     option :name, 'parti'
     option :scope, [:openid, :email]
     option :skip_info, true
+
+    uid { id_info.sub }
+
+    def id_info
+      @id_info ||= lambda {
+        id_token = credentials[:id_token]
+        ::OpenIDConnect::ResponseObject::IdToken.decode(id_token, public_key)
+      }.call
+    end
   end
 end
-
