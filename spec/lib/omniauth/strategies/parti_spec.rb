@@ -14,6 +14,7 @@ describe OmniAuth::Strategies::Parti do
       [200, {}, ["Hello."]]
     end
   end
+
   let(:strategy_class) { Class.new OmniAuth::Strategies::Parti }
 
   describe 'default options' do
@@ -138,10 +139,10 @@ describe OmniAuth::Strategies::Parti do
 
       auth_hash = subject.auth_hash
       id_token = auth_hash.credentials.id_token
-      claims = OpenIDConnect::ResponseObject::IdToken.decode(id_token, subject.public_key)
-      expect(claims.iss).to eq('http://v1.api.auth.parti.xyz')
-      expect(claims.sub).to eq(auth_code[:account][:identifier])
-      expect(claims.aud).to eq(client[:client_id])
+      id_info = OpenIDConnect::ResponseObject::IdToken.decode(id_token, subject.public_key)
+      expect(id_info.iss).to eq('http://v1.api.auth.parti.xyz')
+      expect(id_info.sub).to eq(auth_code[:account][:identifier])
+      expect(id_info.aud).to eq(client[:client_id])
       expect(auth_hash.uid).to eq(auth_code[:account][:identifier])
     end
   end

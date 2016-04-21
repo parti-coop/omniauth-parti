@@ -7,5 +7,17 @@ module PartiAuth
       @access_token = access_token
       @id_info = id_info
     end
+
+    def identifier
+      id_info.sub
+    end
+
+    def email
+      id_info.email
+    end
+
+    def nickname
+      id_info.nickname
+    end
   end
 end
